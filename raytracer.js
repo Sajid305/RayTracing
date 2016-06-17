@@ -41,9 +41,11 @@ window.onload = function init() {
     sceneHandler.objects = addObjects();
     sceneHandler.lights = addSourceLights();
     
-    sceneHandler.buildObjects();
-    sceneHandler.buildLights();    
-
+    //sceneHandler.buildObjects();
+    //sceneHandler.buildLights();    
+    
+    
+    
 
     configureButtons();   
     
@@ -55,10 +57,11 @@ function render() {
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         //rebuild and drawScene the scene
-        //sceneHandler.buildObjects();
-        //sceneHandler.drawScene();
+        sceneHandler.buildObjects();
+        sceneHandler.buildLights();
+        sceneHandler.drawScene();
         
-        requestAnimFrame(render);
+        //requestAnimFrame(render);
         gl.drawArrays( gl.TRIANGLE_STRIP, 0, sceneHandler.vertexBuffer.numItems );
 }
 
@@ -126,6 +129,7 @@ function SceneHandler(){
 			objectMaterials = objectMaterials.concat(this.objects[i].material);
 		}
 
+
 		// Determine the minimum power of two texture size that we need to store this information in the texture
         // WebGL doesn't like non-power-of-two textures :'(
 		sizeList = Math.pow(2.0, Math.ceil(Math.log(this.objects.length)/(2.0*Math.log(2.0))));
@@ -139,29 +143,39 @@ function SceneHandler(){
 			objectColors = objectColors.concat([0.0,0.0,0.0,0.0]);
 			objectMaterials = objectMaterials.concat([0.0,0.0,0.0,0.0]);
 		}
-
+        
+        
     	// Create and bind the textures
         // Preparte data to be send to GPU
+        var dataList = new Uint8Array(objectList);
     	gl.bindTexture(gl.TEXTURE_2D, this.objectsTexture);
-    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(objectList));
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.UNSIGNED_BYTE, dataList );
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     	
+        // This line wasted 2 hours of my life :(
+        // By default, WebGL doesn't accept textures with floating points values.
+        gl.getExtension("OES_texture_float");
+        
+        var dataPositions = new Float32Array(objectPositions);
     	gl.bindTexture(gl.TEXTURE_2D, this.objectPositionsTexture);
-    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(objectPositions));
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, dataPositions);
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     	
+        var dataColors = new Float32Array(objectColors);
     	gl.bindTexture(gl.TEXTURE_2D, this.objectColorsTexture);
-    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(objectColors));
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT,  dataColors);
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     	
+        var dataMaterials = new Float32Array(objectMaterials);
     	gl.bindTexture(gl.TEXTURE_2D, this.objectMaterialsTexture);
-    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(objectMaterials));
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, dataMaterials);
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     	
+        
     	gl.bindTexture(gl.TEXTURE_2D,null);
     }
     
@@ -188,6 +202,8 @@ function SceneHandler(){
 			lightColors = lightColors.concat([0.0,0.0,0.0,0.0]);
 		}
 		
+        gl.getExtension("OES_texture_float");
+        
         // Bind textures and prepare data to be send to GPU		
     	gl.bindTexture(gl.TEXTURE_2D, this.lightsTexture);
     	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(lightPositions));
@@ -233,8 +249,15 @@ function SceneHandler(){
     	
     	gl.uniform1i(shadersLocations.numObjects,this.objects.length);
     	gl.uniform1i(shadersLocations.numLights,this.lights.length);
-    	gl.uniform1f(shadersLocations.objectTextureSize,Math.pow(2.0,Math.ceil(Math.log(this.objects.length)/(2.0*Math.log(2.0)))));
-    	gl.uniform1f(shadersLocations.lightTextureSize,Math.pow(2.0,Math.ceil(Math.log(this.lights.length)/(2.0*Math.log(2.0)))));
+        
+        var objextTextureSize = Math.pow(2.0,Math.ceil(Math.log(this.objects.length)/(2.0*Math.log(2.0))));
+        var lightTextureSize = Math.pow(2.0,Math.ceil(Math.log(this.lights.length)/(2.0*Math.log(2.0))))
+        
+    	gl.uniform1f(shadersLocations.objectTextureSize,objextTextureSize);
+    	gl.uniform1f(shadersLocations.lightTextureSize,lightTextureSize);
+       
+       
+        
     }
     
     return this;   
@@ -243,10 +266,11 @@ function SceneHandler(){
 // Obtain the location of the variables in the shaders
 
 function ShadersLocations(){
-    this.getLocations = function (params) {
-
+    this.getLocations = function () {
+       
+        
         this.resolution = gl.getUniformLocation(program,"resolution");
-        gl.uniform2f(this.resolution,gl.viewportWidth,gl.viewportHeight);
+        gl.uniform2f(this.resolution,canvas.width,canvas.height);
         
         this.objects = gl.getUniformLocation(program,"objects");
         this.objectPositions = gl.getUniformLocation(program,"objectPositions");

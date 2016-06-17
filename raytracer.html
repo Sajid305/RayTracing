@@ -15,11 +15,45 @@
 
     <script id="fragment-shader" type="x-shader/x-fragment">
         precision mediump float;
+        
+        uniform vec2 resolution;
+        
+        // The scene in 2d textures
+		// the id of objects as well as the type.
+		uniform sampler2D objects;
+		// the position of the objects a vec4 to allow for one free parameter
+		uniform sampler2D objectPositions;
+		// the materials of the object format to be decided.
+		uniform sampler2D objectColors;
+		// more material properties so that each pixel represents a unique object
+		uniform sampler2D objectMaterials;
+		// the light positions
+		uniform sampler2D lightPositions;
+		// the light colors
+		uniform sampler2D lightColors;
+        
+        
+        // The number of objects in the scene
+		uniform int numObjects;
+		uniform float objectTextureSize;
+
+		uniform int numLights;
+		uniform float lightTextureSize;
 
         void
         main()
         {   
-            gl_FragColor = vec4(gl_FragCoord.x / 500.0, .3, .4, .5);
+
+                float it = 1.0/objectTextureSize/2.0;
+			    float ity = 1.0/objectTextureSize/2.0;
+                               
+                vec4 color = texture2D(objectColors, vec2(gl_FragCoord.x / 512.0 , (512.0 - gl_FragCoord.y) / 512.0) );
+                
+                //color.w = 1.0;
+                
+                gl_FragColor = color;
+                
+            
         }
     </script>
 
