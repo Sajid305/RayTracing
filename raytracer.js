@@ -22,7 +22,11 @@ window.onload = function init() {
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
         
-        
+    var vPosition = gl.getAttribLocation( program, "vPosition" );
+    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vPosition );
+    
+    
         
     sceneHandler = new SceneHandler();
     sceneHandler.init();
@@ -34,11 +38,6 @@ window.onload = function init() {
     sceneHandler.buildObjects();
     sceneHandler.buildLights();    
 
-
-
-    var vPosition = gl.getAttribLocation( program, "vPosition" );
-    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vPosition );
 
     configureButtons();   
     
@@ -93,7 +92,7 @@ function SceneHandler(){
         this.objectsTexture = gl.createTexture();                // For indices and types
         this.objectPositionsTexture = gl.createTexture();      // For positions
 		this.objectColorsTexture = gl.createTexture();        // For colors
-		this.objectMaterialsTexture = gl.createTexture(); // For coefficients
+		this.objectColorsTexture = gl.createTexture(); // For coefficients
     }
     
     // Init textures where lights and their properties reside
@@ -102,12 +101,63 @@ function SceneHandler(){
 		this.lightMaterialsTexture = gl.createTexture();     // For colors
     }
     
-    //TODO
+    // Re-structure the objects in the scene, and construct the textures that are going to be send to fragment shader
     this.buildObjects = function() {
-       
+       	
+        // Separate objects in different attributes and properties   
+		objectList = [];
+		objectPositions = [];
+		objectColors = [];
+		objectMaterials = [];
+		
+		// Go through each object and populate lists of the type, the position and size, the color, and material properties
+		for(i = 0 ; i < this.objects.length ; i++)
+		{
+			objectList = objectList.concat([i,this.objects[i].type,0,0]);
+			objectPositions = objectPositions.concat(this.objects[i].position);
+			objectColors = objectColors.concat(this.objects[i].color);
+			objectMaterials = objectMaterials.concat(this.objects[i].material);
+		}
+
+		// Determine the minimum power of two texture size that we need to store this information in the texture
+        // WebGL doesn't like non-power-of-two textures :'(
+		sizeList = Math.pow(2.0, Math.ceil(Math.log(this.objects.length)/(2.0*Math.log(2.0))));
+			
+		// Fill the rest with zeros, so WebGL is happy about it.
+        // SizeList^2 because the texture is a 2D square
+		for(i = 0 ; i < sizeList*sizeList - this.objects.length ; i++)
+		{
+			objectList = objectList.concat([0,0,0,0]);
+			objectPositions = objectPositions.concat([0.0,0.0,0.0,0.0]);
+			objectColors = objectColors.concat([0.0,0.0,0.0,0.0]);
+			objectMaterials = objectMaterials.concat([0.0,0.0,0.0,0.0]);
+		}
+
+    	// Create and bind the textures
+    	gl.bindTexture(gl.TEXTURE_2D, this.objectsTexture);
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(objectList));
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    	
+    	gl.bindTexture(gl.TEXTURE_2D, this.objectPositionsTexture);
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(objectPositions));
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    	
+    	gl.bindTexture(gl.TEXTURE_2D, this.objectColorsTexture);
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(objectColors));
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    	
+    	gl.bindTexture(gl.TEXTURE_2D, this.objectMaterialsTexture);
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(objectMaterials));
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    	
+    	gl.bindTexture(gl.TEXTURE_2D,null);
     }
     
-    //TODO
+    // Same as objects but with lights
     this.buildLights = function() {
         
     }
