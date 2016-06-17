@@ -41,8 +41,8 @@ window.onload = function init() {
     sceneHandler.objects = addObjects();
     sceneHandler.lights = addSourceLights();
     
-    //sceneHandler.buildObjects();
-    //sceneHandler.buildLights();    
+    sceneHandler.buildObjects();
+    sceneHandler.buildLights();    
 
 
     configureButtons();   
