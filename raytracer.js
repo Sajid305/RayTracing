@@ -22,22 +22,25 @@ window.onload = function init() {
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
         
+        
+        
     sceneHandler = new SceneHandler();
     sceneHandler.init();
+    
+    // Add objects to scene via external file
+    sceneHandler.objects = addObjects();
+    sceneHandler.lights = addSourceLights();
+    
     sceneHandler.buildObjects();
     sceneHandler.buildLights();    
+
+
 
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
 
-    // Configure buttons to change viewing parameters
-    document.getElementById("Button1").onclick = function(){};
-    document.getElementById("Button2").onclick = function(){};
-    document.getElementById("Button3").onclick = function(){};
-    document.getElementById("Button4").onclick = function(){};
-    document.getElementById("Button5").onclick = function(){};
-    document.getElementById("Button6").onclick = function(){};    
+    configureButtons();   
     
     render();
 }
@@ -51,7 +54,6 @@ function render() {
         sceneHandler.draw();
         
         requestAnimFrame(render);
-
         gl.drawArrays( gl.TRIANGLE_STRIP, 0, sceneHandler.vertexBuffer.numItems );
 }
 
@@ -88,10 +90,10 @@ function SceneHandler(){
     
     // Init textures where the properties of objects reside
     this.initObjectTextures = function() {
-        this.objectsTexture = gl.createTexture();                // For indices
-        this.objectDefinitionsTexture = gl.createTexture();      // For positions
-		this.objectMaterialsTexture = gl.createTexture();        // For colors
-		this.objectMaterialsExtendedTexture = gl.createTexture(); // For coefficients
+        this.objectsTexture = gl.createTexture();                // For indices and types
+        this.objectPositionsTexture = gl.createTexture();      // For positions
+		this.objectColorsTexture = gl.createTexture();        // For colors
+		this.objectMaterialsTexture = gl.createTexture(); // For coefficients
     }
     
     // Init textures where lights and their properties reside
@@ -116,4 +118,14 @@ function SceneHandler(){
     }
     
     return this;   
+}
+
+// Configure buttons to change viewing parameters
+function configureButtons(){
+    document.getElementById("Button1").onclick = function(){};
+    document.getElementById("Button2").onclick = function(){};
+    document.getElementById("Button3").onclick = function(){};
+    document.getElementById("Button4").onclick = function(){};
+    document.getElementById("Button5").onclick = function(){};
+    document.getElementById("Button6").onclick = function(){}; 
 }
