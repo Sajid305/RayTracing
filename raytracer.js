@@ -7,7 +7,7 @@ var gl;
 var program;
 
 var sceneHandler;
-var shadersLocations;
+//var shadersLocations;
 
 window.onload = function init() {
     // Initialize WebGl 
@@ -20,30 +20,32 @@ window.onload = function init() {
     gl.clearColor( 0.5, 0.5, .5, 1.0 );
     //gl.enable(gl.DEPTH_TEST);
     
-    var vPosition = gl.getAttribLocation( program, "vPosition" );
-    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray(vPosition );
     
     //  Load shaders and initialize attribute buffers
     program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
     
-    //shadersLocations = new ShadersLocations();
-    //shadersLocations.getLocations();
+    shadersLocations = new ShadersLocations();
+    shadersLocations.getLocations();
             
     sceneHandler = new SceneHandler();
     sceneHandler.init();
         
+        
+    var vPosition = gl.getAttribLocation( program, "vPosition" );
+    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray(vPosition );
+    
     
     // Add objects to scene via external file
-    //sceneHandler.objects = addObjects();
-    //sceneHandler.lights = addSourceLights();
+    sceneHandler.objects = addObjects();
+    sceneHandler.lights = addSourceLights();
     
     //sceneHandler.buildObjects();
     //sceneHandler.buildLights();    
 
 
-    //configureButtons();   
+    configureButtons();   
     
     render();
 }
@@ -81,7 +83,7 @@ function SceneHandler(){
         vertices.push( vec2(1.0, -1.0) ); 
 			
 		gl.bindBuffer(gl.ARRAY_BUFFER,this.vertexBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER,flatten(vertices),gl.STATIC_drawScene);
+		gl.bufferData(gl.ARRAY_BUFFER,flatten(vertices),gl.STATIC_DRAW);
     }
     
     // Init vertex buffer
@@ -104,6 +106,7 @@ function SceneHandler(){
         this.lightsTexture = gl.createTexture();             // For positions
 		this.lightColorsTexture = gl.createTexture();     // For colors
     }
+    
     
     // Re-structure the objects in the scene, and construct the textures that are going to be send to fragment shader
     this.buildObjects = function() {
@@ -238,14 +241,11 @@ function SceneHandler(){
 }
 
 // Obtain the location of the variables in the shaders
+
 function ShadersLocations(){
     this.getLocations = function (params) {
 
-        this.vPosition = gl.getAttribLocation( program, "vPosition" );
-        gl.vertexAttribPointer( this.vPosition, 2, gl.FLOAT, false, 0, 0 );
-        gl.enableVertexAttribArray( this.vPosition );
-
-        this.resolution = gl.getUniformLocation(program,"uResolution");
+        this.resolution = gl.getUniformLocation(program,"resolution");
         gl.uniform2f(this.resolution,gl.viewportWidth,gl.viewportHeight);
         
         this.objects = gl.getUniformLocation(program,"objects");
