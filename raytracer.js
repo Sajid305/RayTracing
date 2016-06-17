@@ -4,8 +4,10 @@
 
 var canvas;
 var gl;
+var program;
 
 var sceneHandler;
+var shadersLocations;
 
 window.onload = function init() {
     // Initialize WebGl 
@@ -18,28 +20,30 @@ window.onload = function init() {
     gl.clearColor( 0.5, 0.5, .5, 1.0 );
     //gl.enable(gl.DEPTH_TEST);
     
-    //  Load shaders and initialize attribute buffers
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
-    gl.useProgram( program );
-        
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vPosition );
+    gl.enableVertexAttribArray(vPosition );
     
+    //  Load shaders and initialize attribute buffers
+    program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    gl.useProgram( program );
     
-        
+    //shadersLocations = new ShadersLocations();
+    //shadersLocations.getLocations();
+            
     sceneHandler = new SceneHandler();
     sceneHandler.init();
+        
     
     // Add objects to scene via external file
-    sceneHandler.objects = addObjects();
-    sceneHandler.lights = addSourceLights();
+    //sceneHandler.objects = addObjects();
+    //sceneHandler.lights = addSourceLights();
     
-    sceneHandler.buildObjects();
-    sceneHandler.buildLights();    
+    //sceneHandler.buildObjects();
+    //sceneHandler.buildLights();    
 
 
-    configureButtons();   
+    //configureButtons();   
     
     render();
 }
@@ -48,9 +52,9 @@ window.onload = function init() {
 function render() {
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        //rebuild and draw the scene
-        sceneHandler.buildObjects();
-        sceneHandler.draw();
+        //rebuild and drawScene the scene
+        //sceneHandler.buildObjects();
+        //sceneHandler.drawScene();
         
         requestAnimFrame(render);
         gl.drawArrays( gl.TRIANGLE_STRIP, 0, sceneHandler.vertexBuffer.numItems );
@@ -77,7 +81,7 @@ function SceneHandler(){
         vertices.push( vec2(1.0, -1.0) ); 
 			
 		gl.bindBuffer(gl.ARRAY_BUFFER,this.vertexBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER,flatten(vertices),gl.STATIC_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER,flatten(vertices),gl.STATIC_drawScene);
     }
     
     // Init vertex buffer
@@ -92,7 +96,7 @@ function SceneHandler(){
         this.objectsTexture = gl.createTexture();                // For indices and types
         this.objectPositionsTexture = gl.createTexture();      // For positions
 		this.objectColorsTexture = gl.createTexture();        // For colors
-		this.objectColorsTexture = gl.createTexture(); // For coefficients
+		this.objectMaterialsTexture = gl.createTexture(); // For coefficients
     }
     
     // Init textures where lights and their properties reside
@@ -195,12 +199,70 @@ function SceneHandler(){
     	gl.bindTexture(gl.TEXTURE_2D,null);
     }
     
-    // TODO
-    this.draw = function() {
-        
+    // Bind the appropiate textures and send them to the shaders! Bye textures!
+    this.drawScene = function() {
+        gl.bindBuffer(gl.ARRAY_BUFFER,this.vertexBuffer);
+		//gl.vertexAttribPointer(shadersLocations.vertexPositionAttribute,this.vertexBuffer.itemSize,gl.FLOAT,false,0,0);
+		
+		gl.activeTexture(gl.TEXTURE0);
+    	gl.bindTexture(gl.TEXTURE_2D, this.objectsTexture);
+    	gl.uniform1i(shadersLocations.objects, 0);
+    	
+    	gl.activeTexture(gl.TEXTURE1);
+    	gl.bindTexture(gl.TEXTURE_2D, this.objectPositionsTexture);
+    	gl.uniform1i(shadersLocations.objectPositions, 1);
+    	
+    	gl.activeTexture(gl.TEXTURE2);
+    	gl.bindTexture(gl.TEXTURE_2D, this.objectColorsTexture);
+    	gl.uniform1i(shadersLocations.objectColors, 2);
+    	
+    	gl.activeTexture(gl.TEXTURE3);
+    	gl.bindTexture(gl.TEXTURE_2D, this.objectMaterialsTexture);
+    	gl.uniform1i(shadersLocations.objectMaterials, 3);
+    	
+    	gl.activeTexture(gl.TEXTURE4);
+    	gl.bindTexture(gl.TEXTURE_2D, this.lightsTexture);
+    	gl.uniform1i(shadersLocations.lightPositions, 4);
+    	
+    	gl.activeTexture(gl.TEXTURE5);
+    	gl.bindTexture(gl.TEXTURE_2D, this.lightColorsTexture);
+    	gl.uniform1i(shadersLocations.lightColors, 5);
+    	
+    	gl.uniform1i(shadersLocations.numObjects,this.objects.length);
+    	gl.uniform1i(shadersLocations.numLights,this.lights.length);
+    	gl.uniform1f(shadersLocations.objectTextureSize,Math.pow(2.0,Math.ceil(Math.log(this.objects.length)/(2.0*Math.log(2.0)))));
+    	gl.uniform1f(shadersLocations.lightTextureSize,Math.pow(2.0,Math.ceil(Math.log(this.lights.length)/(2.0*Math.log(2.0)))));
     }
     
     return this;   
+}
+
+// Obtain the location of the variables in the shaders
+function ShadersLocations(){
+    this.getLocations = function (params) {
+
+        this.vPosition = gl.getAttribLocation( program, "vPosition" );
+        gl.vertexAttribPointer( this.vPosition, 2, gl.FLOAT, false, 0, 0 );
+        gl.enableVertexAttribArray( this.vPosition );
+
+        this.resolution = gl.getUniformLocation(program,"uResolution");
+        gl.uniform2f(this.resolution,gl.viewportWidth,gl.viewportHeight);
+        
+        this.objects = gl.getUniformLocation(program,"objects");
+        this.objectPositions = gl.getUniformLocation(program,"objectPositions");
+        this.objectColors = gl.getUniformLocation(program,"objectColors");
+        this.objectMaterials = gl.getUniformLocation(program,"objectMaterials");
+        
+        this.lightPositions = gl.getUniformLocation(program,"lightPositions");
+        this.lightColors = gl.getUniformLocation(program,"lightColors");
+        
+        this.numObjects = gl.getUniformLocation(program,"numObjects");
+        this.numLights = gl.getUniformLocation(program,"numLights");
+        this.objectTextureSize = gl.getUniformLocation(program,"objectTextureSize");
+        this.lightTextureSize = gl.getUniformLocation(program,"lightTextureSize");
+        
+    }
+    return this;
 }
 
 // Configure buttons to change viewing parameters
