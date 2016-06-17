@@ -98,17 +98,17 @@ function SceneHandler(){
     // Init textures where lights and their properties reside
     this.initLightTextures = function() {
         this.lightsTexture = gl.createTexture();             // For positions
-		this.lightMaterialsTexture = gl.createTexture();     // For colors
+		this.lightColorsTexture = gl.createTexture();     // For colors
     }
     
     // Re-structure the objects in the scene, and construct the textures that are going to be send to fragment shader
     this.buildObjects = function() {
        	
         // Separate objects in different attributes and properties   
-		objectList = [];
-		objectPositions = [];
-		objectColors = [];
-		objectMaterials = [];
+		var objectList = [];
+		var objectPositions = [];
+		var objectColors = [];
+		var objectMaterials = [];
 		
 		// Go through each object and populate lists of the type, the position and size, the color, and material properties
 		for(i = 0 ; i < this.objects.length ; i++)
@@ -134,6 +134,7 @@ function SceneHandler(){
 		}
 
     	// Create and bind the textures
+        // Preparte data to be send to GPU
     	gl.bindTexture(gl.TEXTURE_2D, this.objectsTexture);
     	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(objectList));
     	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -160,6 +161,38 @@ function SceneHandler(){
     // Same as objects but with lights
     this.buildLights = function() {
         
+        // My lists of position and colors
+		var lightPositions = [];
+		var lightColors = [];
+
+        // Populate lists
+		for(i = 0 ; i < this.lights.length ; i++)
+		{
+			lightPositions = lightPositions.concat(this.lights[i].position);
+			lightColors = lightColors.concat(this.lights[i].color);
+		}
+		
+        // Fill textures with zeros, until sqrt(size) is a power of 2
+		sizeList = Math.pow(2.0,Math.ceil(Math.log(this.lights.length)/(2.0*Math.log(2.0))));
+		
+		for(i = 0 ; i < sizeList*sizeList - this.lights.length ; i++)
+		{
+			lightPositions = lightPositions.concat([0,0,0,0]);
+			lightColors = lightColors.concat([0.0,0.0,0.0,0.0]);
+		}
+		
+        // Bind textures and prepare data to be send to GPU		
+    	gl.bindTexture(gl.TEXTURE_2D, this.lightsTexture);
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(lightPositions));
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    	
+    	gl.bindTexture(gl.TEXTURE_2D, this.lightColorsTexture);
+    	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeList, sizeList, 0, gl.RGBA, gl.FLOAT, new Float32Array(lightColors));
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    	
+    	gl.bindTexture(gl.TEXTURE_2D,null);
     }
     
     // TODO
