@@ -7,7 +7,7 @@ var gl;
 var program;
 
 var sceneHandler;
-//var shadersLocations;
+var shadersLocations;
 
 window.onload = function init() {
     // Initialize WebGl 
