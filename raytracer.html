@@ -48,7 +48,6 @@
 		uniform int numLights;
 		uniform float lightTextureSize;
         
-        
         // Texture coordinates are in the range [0, 1] and [0, 1].
         // So in order to access the 0-based-indexed elements the proper convertion must be done
         // ---------
@@ -88,12 +87,42 @@
             //              l is the direction of a line
             //              x is a point on the line
             
-            bool intersectionHasOccurred = false;
+            // Equations combined and rearranged
+            // d^2(l.l) + 2d(l.(o-c)) + (o-c).(o-c) - r^2 = 0
+            // which has the form of the quadatric formula
+            // with     a = (l.l) = ||l||^2 = 1     Because l is a unit vector
+            //          b = 2 (l.(o - c))
+            //          c = (o-c).(o-c) - r^2 = ||o-c||^2 - r^2
+            // 
+            // We now solve for d.
+
+            // Enough theory
+            
+            // Get information about the sphere
+            vec2 texelCoordinates = convertToTexelCoordinateSystem(sphereIndexInTexture, numObjects, objectTextureSize);
+            vec4 sphere = texture2D(objectPositions, texelCoordinates);
             
             
+            // Compute if there is an intersection
+            float b = 2.0 * dot(direction, cameraLocation - sphere.xyz);
+            float c = dot( cameraLocation - sphere.xyz, cameraLocation - sphere.xyz ) - sphere.w * sphere.w;
             
+            float insideSqrt = b * b - 4.0 * c;
             
-            return intersectionHasOccurred;
+            // If the square product of what is inside the radical is negative, there is no solution.
+            if(insideSqrt < 0.0)
+                return false;
+                
+            float solutionD = (-b + sqrt(insideSqrt)) / 2.0;
+            
+            if(solutionD < 0.0 || solutionD > closestIntersectionDistance)
+                return false; 
+            
+             
+            closestIntersectionDistance = solutionD;
+            closestObjectID = sphereIndexInTexture;
+            
+            return true;
         }
         
         bool intersectWorld(in vec3 cameraLocation, in vec3 direction, inout float closestIntersectionDistance, inout int closestObjectID){
@@ -101,12 +130,12 @@
            
            
             // Loop through all the elements to see the type
-            for(int i = 0; i < numObjects; i++) {
+            for(int i = 0; i < MAX_NUMBER_OF_OBJECTS; i++) {
                
                 // That's the limit my friend
-                if( i >= MAX_NUMBER_OF_OBJECTS ) break;
+                if( i >= numObjects ) break;
                     
-                   
+                // Get object type   
                 vec2 texelCoordinates = convertToTexelCoordinateSystem(i, numObjects, objectTextureSize);
                 int objectType = int( texture2D( objects, texelCoordinates ).y * 256.0 );
                   
@@ -138,19 +167,19 @@
             float closestIntersectionDistance = 10000.0;
             int closestObjectID = -1;
             
-            //if( intersectWorld( cameraLocation, direction, closestIntersectionDistance, closestObjectID ) ){
+            if( intersectWorld( cameraLocation, direction, closestIntersectionDistance, closestObjectID ) ){
                 // Houston, we found something
                 
-                //color = BLUE;
+                color = BLUE;
                 
-           // }
+            }
             
             
             //vec2 myTexelCoordinate = convertToTexelCoordinateSystem( 0 , numObjects, float(objectTextureSize));
             //color = texture2D(lightColors, myTexelCoordinate);
                             
             
-            //gl_FragColor = color;
+            gl_FragColor = color;
             
             
         }
