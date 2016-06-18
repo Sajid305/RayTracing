@@ -19,6 +19,7 @@
         #define RED vec4(1.0, 0.0, 0.0, 1.0);
         #define BLUE vec4(0.0, 0.0, 1.0, 1.0);
         
+        // So we can do loops
         #define MAX_NUMBER_OF_OBJECTS 10
         #define MAX_NUMBER_OF_LIGHTS 10
         
@@ -124,6 +125,9 @@
             return true;
         }
         
+        // Calculates if there is an intersection from the cameraLocation in direction 'direction',
+        // If there is one, returns true and save the intersection values in closestIntersectionDistance and closestObjectID
+        // Where was the intersection and with whom
         bool intersectWorld(in vec3 cameraLocation, in vec3 direction, inout float closestIntersectionDistance, inout int closestObjectID){
             bool intersectionHasOccurred = false;
            
@@ -150,13 +154,66 @@
             return intersectionHasOccurred;
         }
         
+        // Computes the normal of the plane that intersects a given point in a sphere
+        vec3 computeSphereNormal(in vec3 pointInSphere, in vec4 spherePosition){
+            return normalize( pointInSphere - spherePosition.xyz ); 
+        }
+        
+        // Computes the normal of the plane that intersects a given point in a given object
+        vec3 computeNormal(in vec3 intersection, in int objectID){
+            vec2 myTexelCoordinate = convertToTexelCoordinateSystem( objectID , numObjects, objectTextureSize);
+            int objectType = int( texture2D(objects, myTexelCoordinate).y * 256.0 );
+            
+            if(objectType == SPHERE_TYPE)
+                return computeSphereNormal(intersection, texture2D( objectPositions, myTexelCoordinate ));
+                
+            // Unsupported object type
+            return vec3(0.0, 0.0, 0.0);
+        }
+        
+        vec4 computeLight(in vec3 cameraLocation, in vec3 direction, in float closestIntersectionDistance, in int closestObjectID) {
+            
+            // Compute normal in object
+            vec3 intersection = cameraLocation + direction * closestIntersectionDistance;
+            vec3 objectNormalVector = computeNormal(intersection, closestObjectID);
+            
+            vec4 colorLightToAdd = vec4(0.5, 0.5, .5, 1.0);
+            
+            // Loop all the lights
+            for(int i = 0; i < MAX_NUMBER_OF_LIGHTS; i++) {
+                
+                if(i >= numLights) break;
+                
+                
+         
+                /// Calculate distance to light
+                // Get position of light
+                vec2 lightTexelCoord = convertToTexelCoordinateSystem(i, numLights, lightTextureSize);
+                vec3 lightPosition = texture2D( lightPositions, lightTexelCoord ).xyz;
+                
+                float distanceToLight = distance(intersection, lightPosition);
+                
+                float lightDistanceFactorA = .2;
+                float lightDistanceFactorB = .3 * distanceToLight;
+                float lightDistanceFactorC = .1 * distanceToLight * distanceToLight;
+                
+                float lightDistanceFactor = 1.0 / ( lightDistanceFactorA + lightDistanceFactorB + lightDistanceFactorC);
+                   
+                colorLightToAdd *= lightDistanceFactor;
+                
+            }
+            
+            return colorLightToAdd;
+            
+        }
+        
         void main() {
              
             vec4 backgroundColor = vec4(0.65, 0.65, 0.1, 1.0);
             vec4 color = backgroundColor;
             
   			// Where camera is located
-			vec3 cameraLocation = vec3(0.0,0.0,-6.0);
+			vec3 cameraLocation = vec3(0.0,0.0,-4.0);
             // Direction has the range [-1,1] in x coordinates
             // and [-1,1] in y coordinates
 			vec3 direction = normalize(vec3(( gl_FragCoord.xy / resolution - 0.5)  * 2.0, 1.0));
@@ -169,10 +226,18 @@
             if( intersectWorld( cameraLocation, direction, closestIntersectionDistance, closestObjectID ) ){
                 // Houston, we found something
                 
+                // Get the color of the object with closest id and draw it!
                 vec2 myTexelCoordinate = convertToTexelCoordinateSystem( closestObjectID , numObjects, objectTextureSize);
-                color = texture2D(objectColors, myTexelCoordinate);
+                vec4 objectColor = texture2D(objectColors, myTexelCoordinate);
                 
-                //color = BLUE;
+                // Add light
+                color = computeLight( cameraLocation, direction, closestIntersectionDistance, closestObjectID );
+                
+                //TODO mix lights
+                color = (color / 2.0) + (objectColor / 2.0);
+                
+                // Add reflection
+                
                 
             } 
                             
