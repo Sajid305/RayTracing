@@ -125,10 +125,10 @@
             return true;
         }
         
-        // Calculates if there is an intersection from the cameraLocation in direction 'direction',
+        // Calculates if there is an intersection from the origin vector in direction 'direction',
         // If there is one, returns true and save the intersection values in closestIntersectionDistance and closestObjectID
         // Where was the intersection and with whom
-        bool intersectWorld(in vec3 cameraLocation, in vec3 direction, inout float closestIntersectionDistance, inout int closestObjectID){
+        bool intersectWorld(in vec3 origin, in vec3 direction, inout float closestIntersectionDistance, inout int closestObjectID){
             bool intersectionHasOccurred = false;
            
            
@@ -145,7 +145,7 @@
                   
                 // THe only type now is sphere, but more types can be added!
                 if(objectType == SPHERE_TYPE) {
-                    if (intersectSphere( i, cameraLocation, direction, closestIntersectionDistance, closestObjectID ))
+                    if (intersectSphere( i, origin, direction, closestIntersectionDistance, closestObjectID ))
                         intersectionHasOccurred = true;
                 }
                  
@@ -184,12 +184,18 @@
                 
                 if(i >= numLights) break;
                 
-                
-         
-                /// Calculate distance to light
+                /// Calculate shadows
                 // Get position of light
                 vec2 lightTexelCoord = convertToTexelCoordinateSystem(i, numLights, lightTextureSize);
                 vec3 lightPosition = texture2D( lightPositions, lightTexelCoord ).xyz;
+                
+                // Calculate light direction
+                //vec3 lightDirection = normalize( lightPosition - intersection );
+                
+                //if( intersectWorld(intersection, lightDirection) )
+                
+                /// Calculate distance to light
+                
                 
                 float distanceToLight = distance(intersection, lightPosition);
                 

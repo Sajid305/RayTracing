@@ -14,7 +14,7 @@ function addObjects() {
     
     sphere = new Sphere();
     sphere.position = [1.0, 0.0, 1.0, 1.0];
-    sphere.color = [0.0, 0.3, 0.75, 1.0];
+    sphere.color = [0.75, 0.3, 0.1, 1.0];
     objects.push(sphere);
     
     /*
@@ -45,7 +45,7 @@ function addSourceLights(){
     
     /// USER CODE GOES HERE
     var light = new Light();
-    light.position = [2.0, 1.0, 2.0, 0.0];
+    light.position = [2.0, 1.0, 0.0, 0.0];
     light.color = [1.0, 1.0, 1.0, 1.0];
     lights.push(light); 
     
