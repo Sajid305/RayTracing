@@ -11,14 +11,28 @@ function addObjects() {
     sphere.color = [0.0, 0.5, 0.75, 0.75];
     objects.push(sphere);
     
-    
+    /*
     sphere = new Sphere();
     sphere.position = [1.0, 1.0, 0.0, 1.0];
     sphere.color = [1.0, 0.3, 0.5, 0.75];
     objects.push(sphere);
     
     
+    sphere = new Sphere();
+    sphere.position = [1.0, 1.0, 0.0, 1.0];
+    sphere.color = [1.0, 1.0, 0.0, 0.75];
+    objects.push(sphere);
     
+    sphere = new Sphere();
+    sphere.position = [1.0, 1.0, 0.0, 1.0];
+    sphere.color = [0.0, 1.0, 0.0, 0.75];
+    objects.push(sphere);
+    
+    sphere = new Sphere();
+    sphere.position = [1.0, 1.0, 0.0, 1.0];
+    sphere.color = [0.0, 0.0, 0.0, 1.0];
+    objects.push(sphere);
+    */
     ///
     
     return objects;
@@ -32,7 +46,8 @@ function addSourceLights(){
     /// USER CODE GOES HERE
     var light = new Light();
     light.position = [1.0, 2.0, 0.0, 0.0];
-    lights.push(lights); 
+    light.color = [1.0, .75, 0.0, 1.0];
+    lights.push(light); 
     
     
     

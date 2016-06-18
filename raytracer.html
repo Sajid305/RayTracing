@@ -16,6 +16,9 @@
     <script id="fragment-shader" type="x-shader/x-fragment">
         precision mediump float;
         
+        #define RED vec4(1.0, 0.0, 0.0, 1.0);
+        #define BLUE vec4(0.0, 0.0, 1.0, 1.0);
+        
         uniform vec2 resolution;
         
         // The scene in 2d textures
@@ -40,21 +43,49 @@
 		uniform int numLights;
 		uniform float lightTextureSize;
 
-        void
-        main()
-        {   
+        vec2 convertToTexelCoordinateSystem(in int objectID, in int numberObjects, in float textureSize) {
+           if(numberObjects == 1)
+                return vec2(0.5, 0.5);
+           
+           float step = 1.0 / textureSize;
+           float col = mod (float(objectID) + 0.1, textureSize ) ;
+           float x =  col * step + (step / 2.0);
+           
+           int row = int(float(objectID) / textureSize);
+           float y =  float(row) * step + (step / 2.0);
+           
+            return vec2(x, y);
+        }
 
-                float it = 1.0/objectTextureSize/2.0;
-			    float ity = 1.0/objectTextureSize/2.0;
-                               
-                vec4 color = texture2D(objectColors, vec2(gl_FragCoord.x / 512.0 , (512.0 - gl_FragCoord.y) / 512.0) );
-                
-                //color.w = 1.0;
-                
-                gl_FragColor = color;
-                
+        void main() {
+             
+            vec4 backgroundColor = vec4(0.7, 0.5, 0.1, 1.0);
+            vec4 color = backgroundColor;
+            
+  			// Where camera is located
+			vec3 origin = vec3(0.0,1.0,-6.0);
+            // Direction has the range [-1,1] in x coordinates
+            // and [-1,1] in y coordinates
+			vec3 direction = normalize(vec3(( gl_FragCoord.xy / resolution - 0.5)  * 2.0, 1.0));
+            
+            
+            // Prepare to intersect world
+            float closestIntersection = 10000.0;
+            vec2 closestObjectID = vec2(-1.0, -1.0);
+            
+            vec2 myTexelCoordinate = convertToTexelCoordinateSystem( 0 , numObjects, float(objectTextureSize));
+            
+            
+            color = texture2D(lightColors, myTexelCoordinate);
+                            
+            
+            gl_FragColor = color;
+            
             
         }
+        
+
+        
     </script>
 
     <script type="text/javascript" src="./Common/webgl-utils.js"></script>
