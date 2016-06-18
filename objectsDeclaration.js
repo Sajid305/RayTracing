@@ -7,7 +7,7 @@
 
 function Sphere(){
     
-    this.type = 1;
+    this.type = 0;
     // XYZ values, fourth value is radius
 	this.position = [0.0,0.0,0.0,1.0];
 	

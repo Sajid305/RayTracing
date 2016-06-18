@@ -19,6 +19,11 @@
         #define RED vec4(1.0, 0.0, 0.0, 1.0);
         #define BLUE vec4(0.0, 0.0, 1.0, 1.0);
         
+        #define MAX_NUMBER_OF_OBJECTS = 10;
+        #define MAX_NUMBER_OF_LIGHTS = 10;
+        
+        #define SPHERE_TYPE = 0;
+        
         uniform vec2 resolution;
         
         // The scene in 2d textures
@@ -42,7 +47,16 @@
 
 		uniform int numLights;
 		uniform float lightTextureSize;
-
+        
+        
+        // Texture coordinates are in the range [0, 1] and [0, 1].
+        // So in order to access the 0-based-indexed elements the proper convertion must be done
+        // ---------
+        // | 2 | 3 |
+        // | 0 | 1 |
+        // ---------
+        // This is the way texels are organized
+        
         vec2 convertToTexelCoordinateSystem(in int objectID, in int numberObjects, in float textureSize) {
            if(numberObjects == 1)
                 return vec2(0.5, 0.5);
@@ -56,30 +70,81 @@
            
             return vec2(x, y);
         }
-
+        
+        // Test if a ray hits a specific sphere
+        bool intersectSphere(in int sphereIndexInTexture, in vec3 cameraLocation, in vec3 direction, inout float closestIntersectionDistance, inout int closestObjectID ) {
+            // First some background 
+            // Source: https://en.wikipedia.org/wiki/Line–sphere_intersection
+            // Equation for a sphere
+            // ||x - c||^2 = r^2
+            //      where   c is the center point
+            //              r is the radius
+            //              x is a point in the sphere
+            
+            // Equation for a line starting at o 
+            // x = o + dl
+            //      where   d is the distance along line from starting point
+            //              l is the direction of a line
+            //              x is a point on the line
+            
+            
+            
+            
+        }
+        
+        bool intersectWorld(in vec3 cameraLocation, in vec3 direction, inout float closestIntersectionDistance, inout int closestObjectID){
+            bool intersectionHasOccurred = false;
+           
+            // Loop through all the elements to see the type
+            for(int i = 0; i < numberObjects; i++) {
+                
+                // That's the limit my friend
+                if(i >= MAX_NUMBER_OF_OBJECTS)
+                    break;
+                    
+                vec2 texelCoordinates = convertToTexelCoordinateSystem(i, numObjects, objectTextureSize);
+                int objectType = int( texture2D( objects, texelCoordinates ).y * 256.0 );
+                  
+                // THe only type now is sphere, but more types can be added!
+                if(objectType == SPHERE_TYPE) {
+                    if (intersectSphere( i, cameraLocation, direction, closestIntersectionDistance, closestObjectID ))
+                        intersectionHasOccurred = true;
+                }
+                
+            }
+            
+            return intersectionHasOccurred;
+        }
+        
         void main() {
              
             vec4 backgroundColor = vec4(0.7, 0.5, 0.1, 1.0);
             vec4 color = backgroundColor;
             
   			// Where camera is located
-			vec3 origin = vec3(0.0,1.0,-6.0);
+			vec3 cameraLocation = vec3(0.0,1.0,-6.0);
             // Direction has the range [-1,1] in x coordinates
             // and [-1,1] in y coordinates
 			vec3 direction = normalize(vec3(( gl_FragCoord.xy / resolution - 0.5)  * 2.0, 1.0));
             
             
             // Prepare to intersect world
-            float closestIntersection = 10000.0;
-            vec2 closestObjectID = vec2(-1.0, -1.0);
+            float closestIntersectionDistance = 10000.0;
+            int closestObjectID = -1;
             
-            vec2 myTexelCoordinate = convertToTexelCoordinateSystem( 0 , numObjects, float(objectTextureSize));
+            if( intersectWorld( cameraLocation, direction, closestIntersectionDistance, closestObjectID ) ){
+                // Houston, we found something
+                int stupidInt = 0;
+                //color = BLUE;
+                
+            }
             
             
-            color = texture2D(lightColors, myTexelCoordinate);
+            //vec2 myTexelCoordinate = convertToTexelCoordinateSystem( 0 , numObjects, float(objectTextureSize));
+            //color = texture2D(lightColors, myTexelCoordinate);
                             
             
-            gl_FragColor = color;
+            //gl_FragColor = color;
             
             
         }
