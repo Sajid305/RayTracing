@@ -19,10 +19,10 @@
         #define RED vec4(1.0, 0.0, 0.0, 1.0);
         #define BLUE vec4(0.0, 0.0, 1.0, 1.0);
         
-        #define MAX_NUMBER_OF_OBJECTS = 10;
-        #define MAX_NUMBER_OF_LIGHTS = 10;
+        #define MAX_NUMBER_OF_OBJECTS 10
+        #define MAX_NUMBER_OF_LIGHTS 10
         
-        #define SPHERE_TYPE = 0;
+        #define SPHERE_TYPE 0
         
         uniform vec2 resolution;
         
@@ -71,6 +71,7 @@
             return vec2(x, y);
         }
         
+        
         // Test if a ray hits a specific sphere
         bool intersectSphere(in int sphereIndexInTexture, in vec3 cameraLocation, in vec3 direction, inout float closestIntersectionDistance, inout int closestObjectID ) {
             // First some background 
@@ -87,30 +88,35 @@
             //              l is the direction of a line
             //              x is a point on the line
             
+            bool intersectionHasOccurred = false;
             
             
             
+            
+            return intersectionHasOccurred;
         }
         
         bool intersectWorld(in vec3 cameraLocation, in vec3 direction, inout float closestIntersectionDistance, inout int closestObjectID){
             bool intersectionHasOccurred = false;
            
+           
             // Loop through all the elements to see the type
-            for(int i = 0; i < numberObjects; i++) {
-                
+            for(int i = 0; i < numObjects; i++) {
+               
                 // That's the limit my friend
-                if(i >= MAX_NUMBER_OF_OBJECTS)
-                    break;
+                if( i >= MAX_NUMBER_OF_OBJECTS ) break;
                     
+                   
                 vec2 texelCoordinates = convertToTexelCoordinateSystem(i, numObjects, objectTextureSize);
                 int objectType = int( texture2D( objects, texelCoordinates ).y * 256.0 );
+                  
                   
                 // THe only type now is sphere, but more types can be added!
                 if(objectType == SPHERE_TYPE) {
                     if (intersectSphere( i, cameraLocation, direction, closestIntersectionDistance, closestObjectID ))
                         intersectionHasOccurred = true;
                 }
-                
+                 
             }
             
             return intersectionHasOccurred;
@@ -132,12 +138,12 @@
             float closestIntersectionDistance = 10000.0;
             int closestObjectID = -1;
             
-            if( intersectWorld( cameraLocation, direction, closestIntersectionDistance, closestObjectID ) ){
+            //if( intersectWorld( cameraLocation, direction, closestIntersectionDistance, closestObjectID ) ){
                 // Houston, we found something
-                int stupidInt = 0;
+                
                 //color = BLUE;
                 
-            }
+           // }
             
             
             //vec2 myTexelCoordinate = convertToTexelCoordinateSystem( 0 , numObjects, float(objectTextureSize));
