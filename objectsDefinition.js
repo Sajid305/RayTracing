@@ -13,11 +13,11 @@ function addObjects() {
     
     
     sphere = new Sphere();
-    sphere.position = [1.0, 1.0, 0.0, 1.0];
+    sphere.position = [1.0, 1.0, 1.0, 1.0];
     sphere.color = [1.0, 0.3, 0.5, 0.75];
     objects.push(sphere);
     
-    
+    /*
     sphere = new Sphere();
     sphere.position = [1.0, 3.0, 0.0, 1.0];
     sphere.color = [1.0, 1.0, 0.0, 0.75];
@@ -32,7 +32,7 @@ function addObjects() {
     sphere.position = [1.0, 1.0, 0.0, 1.0];
     sphere.color = [0.0, 0.0, 0.0, 1.0];
     objects.push(sphere);
-    
+    */
     ///
     
     return objects;
