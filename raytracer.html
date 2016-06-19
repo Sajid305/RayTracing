@@ -215,16 +215,22 @@
                 // The intersection is moved a little bit, otherwise, the rendering would be choppy because of float precision
                 // And because objects also generate shadows to themselves.
                 if( !intersectWorld(intersection - lightDirection * 0.001, lightDirection, closestShadowDistance, closestShadowObjectID )) {
-                      
+                    
+                    // Implement Phong light model
+                    
+                    // Distance factor  
                     float distanceToLight = distance(intersection, lightPosition);
                 
                     float lightDistanceFactorA = .1;
                     float lightDistanceFactorB = .1 * distanceToLight;
                     float lightDistanceFactorC = .5 * distanceToLight * distanceToLight;
-                
                     float lightDistanceFactor = 1.0 / ( lightDistanceFactorA + lightDistanceFactorB + lightDistanceFactorC);
                    
-                    colorLightToAdd += lightDistanceFactor;                     
+                    // Light color intensity
+                    vec4 lightColorIntensity = texture2D( lightColors, lightTexelCoord );
+                    
+                   
+                    colorLightToAdd += (lightColorIntensity * lightDistanceFactor);                     
                     
                 }
                 
