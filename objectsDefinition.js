@@ -33,9 +33,16 @@ function addSourceLights(){
     /// USER CODE GOES HERE
 
      var light = new Light();
-    light.position = [2.0, 2.0, -5.0, 0.0];
+    light.position = [1.5, 1.5, -5.0, 0.0];
     light.color = [1.0, 1.0, 1.0, 1.0];
     lights.push(light); 
+    
+    light = new Light();
+    light.position = [2.5, 2.5, -1.0, 0.0];
+    light.color = [1.0, 1.0, 1.0, 1.0];
+    lights.push(light); 
+    
+    
     
     
     ///
