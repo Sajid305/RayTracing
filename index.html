@@ -19,6 +19,10 @@
         #define RED vec4(1.0, 0.0, 0.0, 1.0);
         #define BLUE vec4(0.0, 0.0, 1.0, 1.0);
         
+        #define BACKGROUND_COLOR vec4(0.65, 0.65, 0.1, 1.0);
+        
+        //#define MAX_LEVEL_RECURSION 5
+        
         // So we can do loops
         #define MAX_NUMBER_OF_OBJECTS 10
         #define MAX_NUMBER_OF_LIGHTS 10
@@ -176,6 +180,7 @@
             return vec3(0.0, 0.0, 0.0);
         }
         
+        // Computes light according to Blinn-Phong model
         vec4 computeLight(in vec3 cameraLocation, in vec3 direction, in float closestIntersectionDistance, in int closestObjectID) {
             
             // Compute normal in object
@@ -270,23 +275,40 @@
             
         }
         
-        void main() {
-             
-            vec4 backgroundColor = vec4(0.65, 0.65, 0.1, 1.0);
-            vec4 color = backgroundColor;
+        // Computes reflected ray from incidence vector and normal
+        // It is assumed that both vectors are normalized
+       /* vec3 computeReflectedRay(in vec3 incidenceRayDirection, in vec3 normalVector) {
+            return incidenceRayDirection - 2 * normalVector * dot( incidenceRayDirection, normalVector );
+        }
+        */
+        // Computes reflection 
+        vec4 computeReflection(in vec3 origin, in vec3 incidenceRayDirection, in float intersectionDistance, in int objectIntersectedID) {
             
-  			// Where camera is located
-			vec3 cameraLocation = vec3(0.0,1.5,-10.0);
-            // Direction has the range [-1,1] in x coordinates
-            // and [-1,1] in y coordinates
-			vec3 direction = normalize(vec3(( gl_FragCoord.xy / resolution - 0.5)  * 1.0, 1.0));
+            /// Get direction of reflected ray
+            // Compute normal ray
+            //vec3 normalVector = computeNormal( origin + incidenceRayDirection * intersectionDistance, objectIntersectedID );
             
+            // Compute reflected ray
+            //vec3 reflectedRay = computeReflectedRay(incidenceRayDirection, normalVector); 
+            
+            
+            
+            
+           
+            
+            return vec4(0.0, 0.0, 0.0, 1.0);
+        }
+        
+        vec4 computeColor(in vec3 origin, in vec3 direction){
+            
+            
+            vec4 color = BACKGROUND_COLOR;
             
             // Prepare to intersect world
             float closestIntersectionDistance = 10000.0;
             int closestObjectID = -1;
             
-            if( intersectWorld( cameraLocation, direction, closestIntersectionDistance, closestObjectID ) ){
+            if( intersectWorld( origin, direction, closestIntersectionDistance, closestObjectID ) ){
                 // Houston, we found something
                 
                 // Get the color of the object with closest id and draw it!
@@ -294,20 +316,29 @@
                 vec4 objectColor = texture2D(objectColors, myTexelCoordinate);
                 
                 // Add light
-                color = computeLight( cameraLocation, direction, closestIntersectionDistance, closestObjectID );
+                color = computeLight( origin, direction, closestIntersectionDistance, closestObjectID );
                 
-                //TODO mix lights
+                // Mix lights
                 color = (color / 2.0) + (objectColor / 2.0);
                 
                 // Add reflection
-                ///color 
+                //vec4 reflectedColor = computeReflection(cameraLocation, direction, closestIntersectionDistance, closestObjectID); 
                 
+                //color = (color / 2.0) + (reflectedColor / 2.0);
             } 
-                            
             
-            gl_FragColor = color;
+            return color;
+        }
+        
+        void main() {
+             
+  			// Where camera is located
+			vec3 cameraLocation = vec3(0.0,1.5,-10.0);
+            // Direction has the range [-1,1] in x coordinates
+            // and [-1,1] in y coordinates
+			vec3 direction = normalize(vec3(( gl_FragCoord.xy / resolution - 0.5)  * 1.0, 1.0));
             
-            
+            gl_FragColor = computeColor(cameraLocation, direction);
         }
         
 
