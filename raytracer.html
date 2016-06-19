@@ -185,7 +185,7 @@
             vec4 colorLightToAdd = vec4(0.0, 0.0, 0.0, 1.0);
             
             // Compute ambient light
-            float ambientLightCoefficient = texture2D(objectMaterials, convertToTexelCoordinateSystem(closestObjectID, numObjects, objectTextureSize)).y; // See light definition
+            float ambientLightCoefficient = texture2D(objectMaterials, convertToTexelCoordinateSystem(closestObjectID, numObjects, objectTextureSize)).z; // See light definition
             vec4 ambientLightComponent = AMBIENT_LIGHT_INTENSITY * ambientLightCoefficient;
                     
             colorLightToAdd += ambientLightComponent;
@@ -229,8 +229,21 @@
                     // Light color intensity
                     vec4 lightColorIntensity = texture2D( lightColors, lightTexelCoord );
                     
+                    
+                    /// Diffuse light
+                    // Get ligth diffuse coefficient
+                    float diffuseReflectionCoefficient = texture2D(objectMaterials, convertToTexelCoordinateSystem(closestObjectID, numObjects, objectTextureSize)).y; // See light definition
+                    vec3 normalObjectVector = computeNormal(intersection, closestObjectID);
+                    
+                    float angleComponent = dot(normalObjectVector, lightDirection);
+                    if(angleComponent < 0.0) angleComponent = 0.0;
+                    
+                    vec4 diffuseLightComponent = lightColorIntensity * angleComponent;
+                    
+                    
                    
-                    colorLightToAdd += (lightColorIntensity * lightDistanceFactor);                     
+                   
+                    colorLightToAdd += (diffuseLightComponent * lightDistanceFactor);                     
                     
                 }
                 

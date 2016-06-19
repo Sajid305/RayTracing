@@ -21,18 +21,21 @@ function addObjects() {
     
     /*
     sphere = new Sphere();
-    sphere.position = [1.0, 3.0, 0.0, 1.0];
-    sphere.color = [1.0, 1.0, 0.0, 0.75];
+    sphere.position = [0.0, 5.1, 0.0, 1.0];
+    sphere.color = [0.0, 1.0, 0.0, 1.0];
+    sphere.material = [0.5, 0.56, 0.0, 0.0];
     objects.push(sphere);
-    
+    /*
     sphere = new Sphere();
-    sphere.position = [1.0, 1.0, 0.0, 1.0];
+    sphere.position = [1.0, -1.0, -3.0, .5];
     sphere.color = [0.0, 1.0, 0.0, 0.75];
+    sphere.material = [0.5, 0.56, 0.0, 0.0];
     objects.push(sphere);
     
     sphere = new Sphere();
-    sphere.position = [1.0, 1.0, 0.0, 1.0];
-    sphere.color = [0.0, 0.0, 0.0, 1.0];
+    sphere.position = [1.0, -1.0, 3.0, 0.25];
+    sphere.color = [1.0, 0.0, 0.0, 1.0];
+    sphere.material = [0.5, 0.56, 0.0, 0.0];
     objects.push(sphere);
     */
     ///
