@@ -235,12 +235,18 @@
                     float diffuseReflectionCoefficient = texture2D(objectMaterials, convertToTexelCoordinateSystem(closestObjectID, numObjects, objectTextureSize)).y; // See light definition
                     vec3 normalObjectVector = computeNormal(intersection, closestObjectID);
                     
-                    float angleComponent = dot(normalObjectVector, lightDirection);
-                    if(angleComponent < 0.0) angleComponent = 0.0;
+                    float diffuseLightAngleComponent = dot(normalObjectVector, lightDirection);
+                    if(diffuseLightAngleComponent < 0.0) diffuseLightAngleComponent = 0.0;
                     
-                    vec4 diffuseLightComponent = lightColorIntensity * angleComponent;
+                    vec4 diffuseLightComponent = lightColorIntensity * diffuseLightAngleComponent;
                     
                     
+                    /// Specular light
+                    //  Get specular light reflection coefficient
+                    float specularReflectionCoefficient = texture2D(objectMaterials, convertToTexelCoordinateSystem(closestObjectID, numObjects, objectTextureSize)).x; // See light definition
+                    
+                    // TODO Add eye vector and reflected ray vector
+                   
                    
                    
                     colorLightToAdd += (diffuseLightComponent * lightDistanceFactor);                     
