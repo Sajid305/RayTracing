@@ -59,7 +59,7 @@ function render() {
         // Do fun stuff
         time = new Date().getTime();
 		
-        sceneHandler.objects[0].position = 	[0.0, Math.sin(0.2*time/100) + 1.0,0.0,1.0];
+        sceneHandler.objects[0].position = 	[0.0,1.5,Math.sin(0.2*time/100000) + 2.0,1.0];
         sceneHandler.objects[1].position = [2.0*Math.cos(time/1000.0),2.0+Math.sin(time/1000),2.0*Math.sin(time/1000.0),1.0];
 
         

@@ -244,7 +244,7 @@
                     /// Specular light
                     //  Get specular light reflection coefficient
                     float specularReflectionCoefficient = texture2D(objectMaterials, convertToTexelCoordinateSystem(closestObjectID, numObjects, objectTextureSize)).x; // See light definition
-                    float specularExponent = 20.0;
+                    float specularExponent = 50.0;
                     
                     // The dot product is between the normal vector n and the vector h 
                     // Where h = (s + v) / || s + v ||
