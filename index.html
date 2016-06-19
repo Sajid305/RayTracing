@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
     <title>Ray tracer</title>
 
-    <script id="vertex-shader" type="x-shader/x-vertex">
+    <script id="vertex-shader" type="x-shader/x-vertex" src="./shaders/vertexShader.glsl">
         attribute vec4 vPosition;
 
         void main() 
@@ -21,10 +21,10 @@
         
         #define BACKGROUND_COLOR vec4(0.65, 0.65, 0.1, 1.0);
         
-        //#define MAX_LEVEL_RECURSION 5
+        #define MAX_LEVEL_RECURSION 2
         
         // So we can do loops
-        #define MAX_NUMBER_OF_OBJECTS 10
+        #define MAX_NUMBER_OF_OBJECTS 64
         #define MAX_NUMBER_OF_LIGHTS 10
         
         #define SPHERE_TYPE 0
@@ -204,11 +204,8 @@
                 // Get position of light
                 vec2 lightTexelCoord = convertToTexelCoordinateSystem(i, numLights, lightTextureSize);
                 vec3 lightPosition = texture2D( lightPositions, lightTexelCoord ).xyz;
-                
-                
-                
+             
                 /// Calculate shadows
-                
                 
                 // Calculate light direction
                 vec3 lightDirection = normalize( lightPosition - intersection );
@@ -277,27 +274,60 @@
         
         // Computes reflected ray from incidence vector and normal
         // It is assumed that both vectors are normalized
-       /* vec3 computeReflectedRay(in vec3 incidenceRayDirection, in vec3 normalVector) {
-            return incidenceRayDirection - 2 * normalVector * dot( incidenceRayDirection, normalVector );
+        vec3 computeReflectedRay(in vec3 incidenceRayDirection, in vec3 normalVector) {
+            return incidenceRayDirection - 2.0 * normalVector * dot( incidenceRayDirection, normalVector );
         }
-        */
-        // Computes reflection 
-        vec4 computeReflection(in vec3 origin, in vec3 incidenceRayDirection, in float intersectionDistance, in int objectIntersectedID) {
+                
+        // Recursive method to add color of reflected rays
+        vec4 computeColorRecursively(in vec3 origin, in vec3 direction){
             
-            /// Get direction of reflected ray
-            // Compute normal ray
-            //vec3 normalVector = computeNormal( origin + incidenceRayDirection * intersectionDistance, objectIntersectedID );
+            vec4 finalColor = vec4(0.0);
+            float fractionColor = 1.0; // fraction of my color to add to finalColor
             
-            // Compute reflected ray
-            //vec3 reflectedRay = computeReflectedRay(incidenceRayDirection, normalVector); 
+            for (int raybounce = 0; raybounce < MAX_LEVEL_RECURSION; raybounce++) {
+                
+                // Prepare to intersect world
+                float closestIntersectionDistance = 10000.0;
+                int closestObjectID = -1;
+                
+                vec4 color = vec4(0.0);
+                
+                bool worldHasBeenIntersected = intersectWorld( origin, direction, closestIntersectionDistance, closestObjectID );
+                if( worldHasBeenIntersected ){
+                    // Houston, we found something
+                    
+                    // Get the color of the object with closest id and draw it!
+                    vec2 myTexelCoordinate = convertToTexelCoordinateSystem( closestObjectID , numObjects, objectTextureSize);
+                    vec4 objectColor = texture2D(objectColors, myTexelCoordinate);
+                    
+                    // Add light
+                    color = computeLight( origin, direction, closestIntersectionDistance, closestObjectID );
+                    
+                    // Mix lights
+                    color = mix( color, objectColor, 0.5 );
+                    
+                } else {
+                    color = BACKGROUND_COLOR;
+                }
+                
+                
+                // Add color
+                
+                finalColor += color * fractionColor;
+                fractionColor *= 0.1;
+                /*
+                if(!worldHasBeenIntersected)
+                    finalColor = BACKGROUND_COLOR;
+                */
+                // Update origin and direction // TODO substract a little bit
+                origin = origin + direction * (closestIntersectionDistance - .01);
+                direction = computeReflectedRay(direction, computeNormal( origin, closestObjectID ));
+	        }   
             
             
-            
-            
-           
-            
-            return vec4(0.0, 0.0, 0.0, 1.0);
+            return finalColor;
         }
+        
         
         vec4 computeColor(in vec3 origin, in vec3 direction){
             
@@ -320,11 +350,6 @@
                 
                 // Mix lights
                 color = (color / 2.0) + (objectColor / 2.0);
-                
-                // Add reflection
-                //vec4 reflectedColor = computeReflection(cameraLocation, direction, closestIntersectionDistance, closestObjectID); 
-                
-                //color = (color / 2.0) + (reflectedColor / 2.0);
             } 
             
             return color;
@@ -333,12 +358,13 @@
         void main() {
              
   			// Where camera is located
-			vec3 cameraLocation = vec3(0.0,1.5,-10.0);
+			//vec3 cameraLocation = vec3(0.0,1.5,-5.0);
+            vec3 cameraLocation = texture2D(lightPositions, convertToTexelCoordinateSystem(0, numLights, lightTextureSize)).xyz;
             // Direction has the range [-1,1] in x coordinates
             // and [-1,1] in y coordinates
 			vec3 direction = normalize(vec3(( gl_FragCoord.xy / resolution - 0.5)  * 1.0, 1.0));
             
-            gl_FragColor = computeColor(cameraLocation, direction);
+            gl_FragColor = computeColorRecursively(cameraLocation, direction);
         }
         
 
@@ -358,16 +384,20 @@
         Oops ... your browser doesn't support the HTML5 canvas element
         </canvas>
         <p>
-            <button id = "Button1">Increase camera x position</button>
-            <button id = "Button2">Decrease camera x position</button>
+            <button id = "Button1">Decrease camera x position</button>
+            <button id = "Button2">Increase camera x position</button>
         </p>
         <p>
-            <button id = "Button3">Increase camera y position</button>
-            <button id = "Button4">Decrease camera y position</button>
+            <button id = "Button3">Decrease camera y position</button>
+            <button id = "Button4">Increase camera y position</button>
         </p>
         <p>
-            <button id = "Button5">Increase camera z position</button>
-            <button id = "Button6">Decrease camera z position</button>
+            <button id = "Button5">Decrease camera z position</button>
+            <button id = "Button6">Increase camera z position</button>
+        </p>
+        <p>
+            <button id = "Button7">FUN</button>
+            <button id = "Button8">Camera light ON/OFF</button>
         </p>
     </body>
 

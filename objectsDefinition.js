@@ -6,39 +6,21 @@ function addObjects() {
     
     /// USER CODE GOES HERE
     
-    var sphere = new Sphere();
-    sphere.position = [0.0, 1.0, 0.0, 1.0];
-    sphere.color = [0.0, 0.5, 0.75, 1.0];
-    sphere.material = [0.2, 0.75, 0.0, 0.0];
-    objects.push(sphere);
+    var sphere;
     
+    for(var i = 0; i < 4; i++) {
+        for(var j = 0; j < 4; j++ ){
+            for(var k = 0; k < 4; k++ ){
+                sphere = new Sphere();
+                sphere.position = [i, j, k, .3];
+                sphere.color = [i / 4, j / 4, k / 4, 1.0];
+                sphere.material = [0.5, 0.75, 0.0, 0.0];
+                objects.push(sphere);
+            
+            }
+        }
+    }
     
-    sphere = new Sphere();
-    sphere.position = [0.0, 5.0, 1.0, 2.0];
-    sphere.color = [0.75, 0.3, 0.1, 1.0];
-    sphere.material = [0.3, 1.0, 0.0, 0.0];
-    objects.push(sphere);
-    
-    /*
-    sphere = new Sphere();
-    sphere.position = [0.0, 4.5, 0.0, .25];
-    sphere.color = [0.0, 1.0, 0.0, 1.0];
-    sphere.material = [0.5, 0.56, 0.0, 0.0];
-    objects.push(sphere);
-    
-    sphere = new Sphere();
-    sphere.position = [1.0, -1.0, -3.0, .5];
-    sphere.color = [0.0, 1.0, 0.0, 0.75];
-    sphere.material = [0.5, 0.56, 0.0, 0.0];
-    objects.push(sphere);
-    
-    sphere = new Sphere();
-    sphere.position = [1.0, -1.0, 3.0, 0.25];
-    sphere.color = [1.0, 0.0, 0.0, 1.0];
-    sphere.material = [0.5, 0.56, 0.0, 0.0];
-    objects.push(sphere);
-    */
-    ///
     
     return objects;
 }
@@ -51,12 +33,9 @@ function addSourceLights(){
     /// USER CODE GOES HERE
 
      var light = new Light();
-    light.position = [0.0, 3.5, 0.0, 0.0];
+    light.position = [2.0, 2.0, -5.0, 0.0];
     light.color = [1.0, 1.0, 1.0, 1.0];
     lights.push(light); 
-    
-    
-    
     
     
     ///

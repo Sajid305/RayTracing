@@ -9,6 +9,9 @@ var program;
 var sceneHandler;
 var shadersLocations;
 
+var fun = false;
+var cameraLight = true;
+
 window.onload = function init() {
     // Initialize WebGl 
     canvas = document.getElementById( "gl-canvas" );
@@ -57,12 +60,13 @@ function render() {
         sceneHandler.drawScene();
         
         // Do fun stuff
-        time = new Date().getTime();
-		
-        sceneHandler.objects[0].position = 	[0.0,1.5,Math.sin(0.2*time/100000) + 2.0,1.0];
-        sceneHandler.objects[1].position = [2.0*Math.cos(time/1000.0),2.0+Math.sin(time/1000),2.0*Math.sin(time/1000.0),1.0];
-
+        if(fun){
+            time = new Date().getTime();
+            sceneHandler.lights[0].position = [Math.cos(time/1000.0) + 2.0, Math.sin(time/1000.0) + 2.0, -2.0, 1.0];
+        }
         
+        
+        ///sceneHandler.update();
         
         
         requestAnimFrame(render);
@@ -264,6 +268,11 @@ function SceneHandler(){
         
     }
     
+    // You can add fun things here
+    this.update = function() {
+        
+    }
+    
     return this;   
 }
 
@@ -295,10 +304,34 @@ function ShadersLocations(){
 
 // Configure buttons to change viewing parameters
 function configureButtons(){
-    document.getElementById("Button1").onclick = function(){};
-    document.getElementById("Button2").onclick = function(){};
-    document.getElementById("Button3").onclick = function(){};
-    document.getElementById("Button4").onclick = function(){};
-    document.getElementById("Button5").onclick = function(){};
-    document.getElementById("Button6").onclick = function(){}; 
+    document.getElementById("Button1").onclick = function(){
+        sceneHandler.lights[0].position[0] = sceneHandler.lights[0].position[0] - 0.5;
+    };
+    document.getElementById("Button2").onclick = function(){
+        sceneHandler.lights[0].position[0] = sceneHandler.lights[0].position[0] + 0.5;
+    };
+    document.getElementById("Button3").onclick = function(){
+        sceneHandler.lights[0].position[1] = sceneHandler.lights[0].position[1] - 0.5;
+    };
+    document.getElementById("Button4").onclick = function(){
+        sceneHandler.lights[0].position[1] = sceneHandler.lights[0].position[1] + 0.5;
+    };
+    document.getElementById("Button5").onclick = function(){
+        sceneHandler.lights[0].position[2] = sceneHandler.lights[0].position[2] - 0.5;
+    };
+    document.getElementById("Button6").onclick = function(){
+        sceneHandler.lights[0].position[2] = sceneHandler.lights[0].position[2] + 0.5;
+    }; 
+    document.getElementById("Button7").onclick = function(){
+        fun = !fun;
+    }; 
+    document.getElementById("Button8").onclick = function(){
+        cameraLight = !cameraLight;
+        
+        if(!cameraLight){
+            sceneHandler.lights[0].color = [0.0, 0.0, 0.0, 1.0];
+        } else {
+            sceneHandler.lights[0].color = [1.0, 1.0, 1.0, 1.0];
+        }
+    }; 
 }
