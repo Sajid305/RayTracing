@@ -9,14 +9,14 @@ function addObjects() {
     var sphere = new Sphere();
     sphere.position = [0.0, 1.0, 0.0, 1.0];
     sphere.color = [0.0, 0.5, 0.75, 1.0];
-    sphere.material = [0.2, 0.25, 0.0, 0.0];
+    sphere.material = [0.2, 0.75, 0.0, 0.0];
     objects.push(sphere);
     
     
     sphere = new Sphere();
     sphere.position = [0.0, 5.0, 1.0, 2.0];
     sphere.color = [0.75, 0.3, 0.1, 1.0];
-    sphere.material = [0.5, 0.56, 0.0, 0.0];
+    sphere.material = [0.3, 1.0, 0.0, 0.0];
     objects.push(sphere);
     
     /*

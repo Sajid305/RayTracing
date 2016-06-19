@@ -216,7 +216,7 @@
                 // And because objects also generate shadows to themselves.
                 if( !intersectWorld(intersection - lightDirection * 0.001, lightDirection, closestShadowDistance, closestShadowObjectID )) {
                     
-                    // Implement Phong light model
+                    // Implement Blinn-Phong light model
                     
                     // Distance factor  
                     float distanceToLight = distance(intersection, lightPosition);
@@ -238,18 +238,28 @@
                     float diffuseLightAngleComponent = dot(normalObjectVector, lightDirection);
                     if(diffuseLightAngleComponent < 0.0) diffuseLightAngleComponent = 0.0;
                     
-                    vec4 diffuseLightComponent = lightColorIntensity * diffuseLightAngleComponent;
+                    float diffuseLightComponent = diffuseReflectionCoefficient * diffuseLightAngleComponent;
                     
                     
                     /// Specular light
                     //  Get specular light reflection coefficient
                     float specularReflectionCoefficient = texture2D(objectMaterials, convertToTexelCoordinateSystem(closestObjectID, numObjects, objectTextureSize)).x; // See light definition
+                    float specularExponent = 20.0;
                     
-                    // TODO Add eye vector and reflected ray vector
+                    // The dot product is between the normal vector n and the vector h 
+                    // Where h = (s + v) / || s + v ||
+                    // and s is light direction unit vector
+                    // and v is origin vector
+                    vec3 intermediateVector = lightDirection - direction;
+                    vec3 halfwayVector = normalize( ( intermediateVector) / length(intermediateVector));
+                    
+                    
+                    float specularLightAngleComponent = max( dot(normalObjectVector, halfwayVector), 0.0);
+                    specularLightAngleComponent = pow(specularLightAngleComponent, specularExponent);                   
+                    
+                    float specularLightCompoment = specularReflectionCoefficient * specularLightAngleComponent;
                    
-                   
-                   
-                    colorLightToAdd += (diffuseLightComponent * lightDistanceFactor);                     
+                    colorLightToAdd += (lightDistanceFactor * lightColorIntensity * (diffuseLightComponent + specularLightCompoment));                     
                     
                 }
                 
@@ -290,7 +300,7 @@
                 color = (color / 2.0) + (objectColor / 2.0);
                 
                 // Add reflection
-                
+                ///color 
                 
             } 
                             
