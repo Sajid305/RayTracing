@@ -213,10 +213,9 @@
                 
                 // If it is in shadow don't add color
                 // The intersection is moved a little bit, otherwise, the rendering would be choppy because of float precision
+                // And because objects also generate shadows to themselves.
                 if( !intersectWorld(intersection - lightDirection * 0.001, lightDirection, closestShadowDistance, closestShadowObjectID )) {
-                    
-                    if(closestShadowObjectID == closestObjectID) break;
-                        
+                      
                     float distanceToLight = distance(intersection, lightPosition);
                 
                     float lightDistanceFactorA = .1;

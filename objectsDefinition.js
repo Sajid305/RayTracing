@@ -51,13 +51,13 @@ function addSourceLights(){
     light.color = [1.0, 1.0, 1.0, 1.0];
     lights.push(light); 
     
-    /*
+    
      var light = new Light();
-    light.position = [.5, 0.0, -1.0, 0.0];
-    light.color = [.75, .75, 1.0, 1.0];
+    light.position = [0.0, 3.5, 0.0, 0.0];
+    light.color = [1.0, .75, 1.0, 1.0];
     lights.push(light); 
     
-    */
+    
     
     
     
