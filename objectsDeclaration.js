@@ -11,7 +11,7 @@ function Sphere(){
     // XYZ values, fourth value is radius
 	this.position = [0.0,0.0,0.0,1.0];
 	
-	// RGB and diffuse lihgting component
+	// RGB and diffuse lighting component
 	this.color = [1.0,1.0,1.0,1.0];
 	
 	// Specular lighting, reflection component, unused and unused

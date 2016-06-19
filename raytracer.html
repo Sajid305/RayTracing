@@ -25,6 +25,10 @@
         
         #define SPHERE_TYPE 0
         
+        /// Light coefficient
+        #define AMBIENT_LIGHT_INTENSITY vec4(0.2, 0.2, 0.2, 1.0)
+        
+        
         uniform vec2 resolution;
         
         // The scene in 2d textures
@@ -112,8 +116,9 @@
             // If the square product of what is inside the radical is negative, there is no solution.
             if(insideSqrt < 0.0)
                 return false;
-                
-            float solutionD = (-b + sqrt(insideSqrt)) / 2.0;
+            
+            // You want the closest intersection    
+            float solutionD = (-b - sqrt(insideSqrt)) / 2.0;
             
             if(solutionD < 0.0 || solutionD > closestIntersectionDistance)
                 return false; 
@@ -177,36 +182,54 @@
             vec3 intersection = cameraLocation + direction * closestIntersectionDistance;
             vec3 objectNormalVector = computeNormal(intersection, closestObjectID);
             
-            vec4 colorLightToAdd = vec4(0.5, 0.5, .5, 1.0);
+            vec4 colorLightToAdd = vec4(0.0, 0.0, 0.0, 1.0);
+            
+            // Compute ambient light
+            float ambientLightCoefficient = texture2D(objectMaterials, convertToTexelCoordinateSystem(closestObjectID, numObjects, objectTextureSize)).y; // See light definition
+            vec4 ambientLightComponent = AMBIENT_LIGHT_INTENSITY * ambientLightCoefficient;
+                    
+            colorLightToAdd += ambientLightComponent;
             
             // Loop all the lights
             for(int i = 0; i < MAX_NUMBER_OF_LIGHTS; i++) {
                 
                 if(i >= numLights) break;
                 
-                /// Calculate shadows
+                /// Compute light
                 // Get position of light
                 vec2 lightTexelCoord = convertToTexelCoordinateSystem(i, numLights, lightTextureSize);
                 vec3 lightPosition = texture2D( lightPositions, lightTexelCoord ).xyz;
                 
+                
+                
+                /// Calculate shadows
+                
+                
                 // Calculate light direction
-                //vec3 lightDirection = normalize( lightPosition - intersection );
+                vec3 lightDirection = normalize( lightPosition - intersection );
                 
-                //if( intersectWorld(intersection, lightDirection) )
+                float closestShadowDistance = 10000.0;        
+                int closestShadowObjectID = -1;       
                 
-                /// Calculate distance to light
+                // If it is in shadow don't add color
+                // The intersection is moved a little bit, otherwise, the rendering would be choppy because of float precision
+                if( !intersectWorld(intersection - lightDirection * 0.001, lightDirection, closestShadowDistance, closestShadowObjectID )) {
+                    
+                    if(closestShadowObjectID == closestObjectID) break;
+                        
+                    float distanceToLight = distance(intersection, lightPosition);
                 
+                    float lightDistanceFactorA = .1;
+                    float lightDistanceFactorB = .1 * distanceToLight;
+                    float lightDistanceFactorC = .5 * distanceToLight * distanceToLight;
                 
-                float distanceToLight = distance(intersection, lightPosition);
-                
-                float lightDistanceFactorA = .2;
-                float lightDistanceFactorB = .3 * distanceToLight;
-                float lightDistanceFactorC = .1 * distanceToLight * distanceToLight;
-                
-                float lightDistanceFactor = 1.0 / ( lightDistanceFactorA + lightDistanceFactorB + lightDistanceFactorC);
+                    float lightDistanceFactor = 1.0 / ( lightDistanceFactorA + lightDistanceFactorB + lightDistanceFactorC);
                    
-                colorLightToAdd *= lightDistanceFactor;
+                    colorLightToAdd += lightDistanceFactor;                     
+                    
+                }
                 
+               
             }
             
             return colorLightToAdd;
